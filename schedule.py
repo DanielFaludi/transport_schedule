@@ -2,9 +2,9 @@
 
 import argparse
 
-from parser import Parser
-from output import ConstructXML
-
+from core.parser import Parser
+from core.output import ConstructXML
+from core.exceptions.exceptions import InvalidInput, NotFound
 
 def process_args():
     parser = argparse.ArgumentParser()
@@ -17,7 +17,16 @@ def process_args():
 def main():
     start, dest = process_args()
     parser = Parser(start, dest)
-    routes = parser.get_routes()
+    
+    try:
+        routes = parser.get_routes()
+    except InvalidInput as e:
+        print(e)
+        return 1
+    except NotFound as e:
+        print(e)
+        return 1
+
     output = ConstructXML()
     output.print_xml(routes)
 

@@ -5,7 +5,7 @@ import re
 
 from bs4 import BeautifulSoup
 from collections import defaultdict
-
+from core.exceptions.exceptions import NotFound, InvalidInput
 
 class Parser(object):
     """Scrapes cp.sk website to get current data"""
@@ -36,7 +36,20 @@ class Parser(object):
             data.update(state)
 
             response = s.post(url, data=data)
-            return BeautifulSoup(response.text, "html.parser")
+            soup = BeautifulSoup(response.text, "html.parser")
+
+            if soup.find("p", {"class": "errcont"}):
+                raise InvalidInput("Invalid location entered")
+            
+            try:
+                info = soup.find("b").find(text=True)
+            except AttributeError:
+                info = None
+                
+            if info == "Spojenie sa nenašlo.":
+                raise NotFound("Route not found")
+
+            return soup
 
     def get_routes(self):
         data = self._get_data()
